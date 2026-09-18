@@ -1,0 +1,195 @@
+# FreshTrack 🥬 — User Flow
+
+## 1. Daftar Screen
+
+FreshTrack memiliki beberapa screen utama yang digunakan untuk menjalankan alur aplikasi:
+
+1. **Splash Screen**
+   Menampilkan tampilan awal ketika aplikasi dibuka.
+
+2. **Login**
+   Digunakan oleh pengguna untuk masuk ke akun.
+
+3. **Register**
+   Digunakan oleh pengguna baru untuk membuat akun.
+
+4. **Home**
+   Menampilkan daftar makanan yang tersimpan beserta status dan prioritasnya.
+
+5. **Add Food**
+   Digunakan untuk menambahkan data makanan baru.
+
+6. **Food Detail**
+   Menampilkan informasi lengkap mengenai makanan yang dipilih.
+
+7. **Edit Food**
+   Digunakan untuk mengubah informasi makanan.
+
+8. **Profile**
+   Menampilkan informasi akun dan menyediakan fitur Logout.
+
+---
+
+## 2. Alur Utama
+
+Pengguna membuka aplikasi dan diarahkan ke halaman Login. Jika pengguna belum memiliki akun, pengguna dapat melakukan Register terlebih dahulu.
+
+Setelah berhasil melakukan Login, pengguna masuk ke halaman Home untuk melihat daftar makanan yang tersimpan.
+
+Dari halaman Home, pengguna dapat menambahkan makanan baru melalui halaman Add Food. Pengguna juga dapat memilih makanan untuk melihat detailnya, mengubah data melalui Edit Food, atau menghapus makanan yang sudah digunakan atau dibuang.
+
+Pengguna juga dapat membuka halaman Profile untuk melihat informasi akun dan melakukan Logout.
+
+### Urutan Alur Utama
+
+**Splash → Login → Home**
+
+Jika pengguna belum memiliki akun:
+
+**Splash → Login → Register → Login → Home**
+
+Alur pengelolaan makanan:
+
+**Home → Add Food → Home**
+
+**Home → Food Detail → Edit Food → Home**
+
+**Home → Food Detail → Delete → Home**
+
+Alur akun:
+
+**Home → Profile → Logout → Login**
+
+---
+
+## 3. Navigasi
+
+### Splash Screen
+
+Setelah aplikasi dibuka, pengguna akan diarahkan ke halaman Login.
+
+**Splash Screen → Login**
+
+### Login
+
+Pengguna dapat melakukan Login atau menuju halaman Register.
+
+**Login → Home**
+
+**Login → Register**
+
+### Register
+
+Pengguna membuat akun baru kemudian kembali ke halaman Login.
+
+**Register → Login**
+
+### Home
+
+Home merupakan halaman utama aplikasi. Pengguna dapat:
+
+* Menambahkan makanan baru.
+* Memilih makanan untuk melihat detail.
+* Membuka Profile.
+
+**Home → Add Food**
+
+**Home → Food Detail**
+
+**Home → Profile**
+
+### Add Food
+
+Setelah pengguna mengisi data makanan dan berhasil menyimpannya, pengguna kembali ke Home.
+
+**Add Food → Home**
+
+### Food Detail
+
+Pengguna dapat melihat informasi lengkap makanan, mengubah data, atau menghapus makanan.
+
+**Food Detail → Edit Food**
+
+**Food Detail → Delete → Home**
+
+### Edit Food
+
+Setelah perubahan disimpan, pengguna kembali ke Home.
+
+**Edit Food → Home**
+
+### Profile
+
+Pengguna dapat melihat informasi akun dan melakukan Logout.
+
+**Profile → Logout → Login**
+
+---
+
+## 4. Skenario Penggunaan
+
+### Skenario 1 — Pengguna Baru
+
+Seorang pengguna baru membuka aplikasi FreshTrack. Pengguna masuk ke halaman Login dan memilih Register karena belum memiliki akun.
+
+Pengguna mengisi informasi yang diperlukan untuk membuat akun. Setelah akun berhasil dibuat, pengguna kembali ke halaman Login dan melakukan Login.
+
+Setelah berhasil Login, pengguna masuk ke halaman Home.
+
+### Skenario 2 — Menambahkan Makanan
+
+Pengguna berada di halaman Home dan ingin menyimpan data makanan yang baru dimasukkan ke kulkas.
+
+Pengguna memilih Add Food dan mengisi informasi makanan, seperti nama makanan, kategori, jumlah, tanggal disimpan, batas penggunaan, dan lokasi penyimpanan.
+
+Setelah data disimpan, makanan akan muncul di halaman Home.
+
+### Skenario 3 — Melihat Prioritas Makanan
+
+Pengguna membuka Home untuk melihat makanan yang tersimpan.
+
+Sistem menampilkan makanan berdasarkan batas penggunaan sehingga makanan dengan tanggal penggunaan paling dekat menjadi prioritas.
+
+Pengguna dapat memilih makanan tersebut untuk melihat detailnya.
+
+### Skenario 4 — Mengubah Data Makanan
+
+Pengguna memilih salah satu makanan dari Home.
+
+Sistem menampilkan Food Detail. Pengguna memilih Edit Food untuk mengubah informasi seperti jumlah, tanggal penggunaan, atau lokasi penyimpanan.
+
+Setelah perubahan disimpan, data makanan akan diperbarui dan ditampilkan kembali di Home.
+
+### Skenario 5 — Menghapus Makanan
+
+Pengguna memilih makanan yang sudah digunakan atau dibuang.
+
+Dari halaman Food Detail, pengguna memilih Delete. Data makanan dihapus dari daftar makanan aktif dan pengguna kembali ke Home.
+
+### Skenario 6 — Logout
+
+Pengguna membuka halaman Profile dari Home.
+
+Pengguna memilih Logout untuk keluar dari akun. Setelah logout berhasil, pengguna diarahkan kembali ke halaman Login.
+
+---
+
+## 5. Status Makanan
+
+Status makanan ditentukan berdasarkan tanggal penggunaan yang dimasukkan oleh pengguna.
+
+* 🟢 **Masih Segar** — tanggal penggunaan masih cukup jauh.
+* 🟡 **Segera Digunakan** — tanggal penggunaan sudah dekat.
+* 🔴 **Melewati Batas** — tanggal penggunaan telah lewat.
+
+Status tersebut hanya digunakan sebagai indikator berdasarkan tanggal yang dimasukkan pengguna dan bukan merupakan penilaian keamanan makanan.
+
+---
+
+## 6. Ringkasan User Flow
+
+FreshTrack memiliki alur utama dari **Login → Home → Pengelolaan Makanan**.
+
+Pengguna dapat menambahkan, melihat, mengubah, dan menghapus makanan. Sistem juga membantu pengguna menentukan makanan yang perlu digunakan terlebih dahulu berdasarkan batas penggunaan.
+
+Alur aplikasi dibuat sederhana agar pengguna dapat mengelola makanan dari satu halaman utama tanpa navigasi yang terlalu kompleks.
