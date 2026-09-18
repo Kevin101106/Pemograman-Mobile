@@ -42,23 +42,29 @@ Pengguna juga dapat membuka halaman Profile untuk melihat informasi akun dan mel
 
 ### Urutan Alur Utama
 
-**Splash → Login → Home**
+**Alur pengguna baru:**
 
-Jika pengguna belum memiliki akun:
+`Splash → Login → Register → Login → Home`
 
-**Splash → Login → Register → Login → Home**
+**Alur pengguna yang sudah memiliki akun:**
 
-Alur pengelolaan makanan:
+`Splash → Login → Home`
 
-**Home → Add Food → Home**
+**Alur menambahkan makanan:**
 
-**Home → Food Detail → Edit Food → Home**
+`Home → Add Food → Home`
 
-**Home → Food Detail → Delete → Home**
+**Alur mengubah makanan:**
 
-Alur akun:
+`Home → Food Detail → Edit Food → Home`
 
-**Home → Profile → Logout → Login**
+**Alur menghapus makanan:**
+
+`Home → Food Detail → Delete → Home`
+
+**Alur logout:**
+
+`Home → Profile → Logout → Login`
 
 ---
 
@@ -68,21 +74,20 @@ Alur akun:
 
 Setelah aplikasi dibuka, pengguna akan diarahkan ke halaman Login.
 
-**Splash Screen → Login**
+`Splash Screen → Login`
 
 ### Login
 
 Pengguna dapat melakukan Login atau menuju halaman Register.
 
-**Login → Home**
-
-**Login → Register**
+* `Login → Home`
+* `Login → Register`
 
 ### Register
 
 Pengguna membuat akun baru kemudian kembali ke halaman Login.
 
-**Register → Login**
+`Register → Login`
 
 ### Home
 
@@ -92,37 +97,36 @@ Home merupakan halaman utama aplikasi. Pengguna dapat:
 * Memilih makanan untuk melihat detail.
 * Membuka Profile.
 
-**Home → Add Food**
+Navigasi:
 
-**Home → Food Detail**
-
-**Home → Profile**
+* `Home → Add Food`
+* `Home → Food Detail`
+* `Home → Profile`
 
 ### Add Food
 
 Setelah pengguna mengisi data makanan dan berhasil menyimpannya, pengguna kembali ke Home.
 
-**Add Food → Home**
+`Add Food → Home`
 
 ### Food Detail
 
 Pengguna dapat melihat informasi lengkap makanan, mengubah data, atau menghapus makanan.
 
-**Food Detail → Edit Food**
-
-**Food Detail → Delete → Home**
+* `Food Detail → Edit Food`
+* `Food Detail → Delete → Home`
 
 ### Edit Food
 
 Setelah perubahan disimpan, pengguna kembali ke Home.
 
-**Edit Food → Home**
+`Edit Food → Home`
 
 ### Profile
 
 Pengguna dapat melihat informasi akun dan melakukan Logout.
 
-**Profile → Logout → Login**
+`Profile → Logout → Login`
 
 ---
 
@@ -140,7 +144,14 @@ Setelah berhasil Login, pengguna masuk ke halaman Home.
 
 Pengguna berada di halaman Home dan ingin menyimpan data makanan yang baru dimasukkan ke kulkas.
 
-Pengguna memilih Add Food dan mengisi informasi makanan, seperti nama makanan, kategori, jumlah, tanggal disimpan, batas penggunaan, dan lokasi penyimpanan.
+Pengguna memilih **Add Food** dan mengisi informasi makanan, seperti:
+
+* Nama makanan
+* Kategori
+* Jumlah
+* Tanggal disimpan
+* Batas penggunaan
+* Lokasi penyimpanan
 
 Setelah data disimpan, makanan akan muncul di halaman Home.
 
@@ -156,7 +167,7 @@ Pengguna dapat memilih makanan tersebut untuk melihat detailnya.
 
 Pengguna memilih salah satu makanan dari Home.
 
-Sistem menampilkan Food Detail. Pengguna memilih Edit Food untuk mengubah informasi seperti jumlah, tanggal penggunaan, atau lokasi penyimpanan.
+Sistem menampilkan Food Detail. Pengguna memilih **Edit Food** untuk mengubah informasi seperti jumlah, tanggal penggunaan, atau lokasi penyimpanan.
 
 Setelah perubahan disimpan, data makanan akan diperbarui dan ditampilkan kembali di Home.
 
@@ -164,13 +175,13 @@ Setelah perubahan disimpan, data makanan akan diperbarui dan ditampilkan kembali
 
 Pengguna memilih makanan yang sudah digunakan atau dibuang.
 
-Dari halaman Food Detail, pengguna memilih Delete. Data makanan dihapus dari daftar makanan aktif dan pengguna kembali ke Home.
+Dari halaman Food Detail, pengguna memilih **Delete**. Data makanan dihapus dari daftar makanan aktif dan pengguna kembali ke Home.
 
 ### Skenario 6 — Logout
 
 Pengguna membuka halaman Profile dari Home.
 
-Pengguna memilih Logout untuk keluar dari akun. Setelah logout berhasil, pengguna diarahkan kembali ke halaman Login.
+Pengguna memilih **Logout** untuk keluar dari akun. Setelah logout berhasil, pengguna diarahkan kembali ke halaman Login.
 
 ---
 
@@ -178,11 +189,13 @@ Pengguna memilih Logout untuk keluar dari akun. Setelah logout berhasil, penggun
 
 Status makanan ditentukan berdasarkan tanggal penggunaan yang dimasukkan oleh pengguna.
 
-* 🟢 **Masih Segar** — tanggal penggunaan masih cukup jauh.
-* 🟡 **Segera Digunakan** — tanggal penggunaan sudah dekat.
-* 🔴 **Melewati Batas** — tanggal penggunaan telah lewat.
+| Status                  | Keterangan                           |
+| ----------------------- | ------------------------------------ |
+| 🟢 **Masih Segar**      | Tanggal penggunaan masih cukup jauh. |
+| 🟡 **Segera Digunakan** | Tanggal penggunaan sudah dekat.      |
+| 🔴 **Melewati Batas**   | Tanggal penggunaan telah lewat.      |
 
-Status tersebut hanya digunakan sebagai indikator berdasarkan tanggal yang dimasukkan pengguna dan bukan merupakan penilaian keamanan makanan.
+> **Catatan:** Status hanya digunakan sebagai indikator berdasarkan tanggal yang dimasukkan pengguna dan bukan merupakan penilaian keamanan makanan.
 
 ---
 
