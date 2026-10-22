@@ -1,24 +1,60 @@
+
 import 'package:flutter/material.dart';
+import '../food_store.dart';
+import '../models/food_item.dart';
 
 class EditFoodScreen extends StatefulWidget {
-  const EditFoodScreen({super.key});
+  final FoodItem food;
+
+  const EditFoodScreen({super.key, required this.food});
 
   @override
   State<EditFoodScreen> createState() => _EditFoodScreenState();
 }
 
 class _EditFoodScreenState extends State<EditFoodScreen> {
-  final TextEditingController nameController =
-      TextEditingController(text: 'Chicken');
+  late final TextEditingController nameController;
+  late final TextEditingController quantityController;
+  late String selectedCategory;
+  late String selectedLocation;
+  late DateTime storedDate;
+  late DateTime useByDate;
+  bool isSaving = false;
 
-  final TextEditingController quantityController =
-      TextEditingController(text: '2');
+  final List<String> categories = [
+    'Vegetables',
+    'Meat',
+    'Fruit',
+    'Dairy',
+    'Other',
+  ];
 
-  String selectedCategory = 'Meat';
-  String selectedLocation = 'Refrigerator';
+  final List<String> locations = [
+    'Refrigerator',
+    'Freezer',
+    'Other',
+  ];
 
-  DateTime storedDate = DateTime(2026, 9, 29);
-  DateTime useByDate = DateTime(2026, 10, 5);
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: widget.food.name);
+    quantityController = TextEditingController(
+      text: widget.food.quantity.toString(),
+    );
+    selectedCategory = widget.food.category;
+    selectedLocation = widget.food.location;
+    storedDate = widget.food.storedDate;
+    useByDate = widget.food.useByDate;
+
+    if (!categories.contains(selectedCategory)) {
+      categories.add(selectedCategory);
+    }
+
+    if (!locations.contains(selectedLocation)) {
+      locations.add(selectedLocation);
+    }
+  }
 
   Future<void> selectStoredDate() async {
     final pickedDate = await showDatePicker(
@@ -31,6 +67,9 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
     if (pickedDate != null) {
       setState(() {
         storedDate = pickedDate;
+        if (useByDate.isBefore(storedDate)) {
+          useByDate = storedDate;
+        }
       });
     }
   }
@@ -38,8 +77,8 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
   Future<void> selectUseByDate() async {
     final pickedDate = await showDatePicker(
       context: context,
-      initialDate: useByDate,
-      firstDate: DateTime(2020),
+      initialDate: useByDate.isBefore(storedDate) ? storedDate : useByDate,
+      firstDate: storedDate,
       lastDate: DateTime(2100),
     );
 
@@ -51,9 +90,54 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
   }
 
   String formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/'
-        '${date.month.toString().padLeft(2, '0')}/'
-        '${date.year}';
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  void saveChanges() {
+    final name = nameController.text.trim();
+    final quantity = int.tryParse(quantityController.text.trim());
+
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Food name is required.')),
+      );
+      return;
+    }
+
+    if (quantity == null || quantity <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Quantity must be a whole number greater than 0.')),
+      );
+      return;
+    }
+
+    if (useByDate.isBefore(storedDate)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Use-by date cannot be before stored date.')),
+      );
+      return;
+    }
+
+    setState(() {
+      isSaving = true;
+    });
+
+    final updatedFood = FoodItem(
+      name: name,
+      category: selectedCategory,
+      quantity: quantity,
+      storedDate: storedDate,
+      useByDate: useByDate,
+      location: selectedLocation,
+    );
+
+    final index = FoodStore.foods.indexOf(widget.food);
+
+    if (index != -1) {
+      FoodStore.foods[index] = updatedFood;
+    }
+
+    Navigator.pop(context, updatedFood);
   }
 
   @override
@@ -71,9 +155,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
         foregroundColor: Colors.white,
         title: const Text(
           'Edit Food',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
@@ -83,14 +165,9 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
           children: [
             const Text(
               'Food Name',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 8),
-
             TextField(
               controller: nameController,
               decoration: InputDecoration(
@@ -100,19 +177,12 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 20),
-
             const Text(
               'Category',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 8),
-
             DropdownButtonFormField<String>(
               value: selectedCategory,
               decoration: InputDecoration(
@@ -120,28 +190,12 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              items: const [
-                DropdownMenuItem(
-                  value: 'Vegetables',
-                  child: Text('Vegetables'),
-                ),
-                DropdownMenuItem(
-                  value: 'Meat',
-                  child: Text('Meat'),
-                ),
-                DropdownMenuItem(
-                  value: 'Fruit',
-                  child: Text('Fruit'),
-                ),
-                DropdownMenuItem(
-                  value: 'Dairy',
-                  child: Text('Dairy'),
-                ),
-                DropdownMenuItem(
-                  value: 'Other',
-                  child: Text('Other'),
-                ),
-              ],
+              items: categories
+                  .map((category) => DropdownMenuItem(
+                        value: category,
+                        child: Text(category),
+                      ))
+                  .toList(),
               onChanged: (value) {
                 if (value != null) {
                   setState(() {
@@ -150,19 +204,12 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                 }
               },
             ),
-
             const SizedBox(height: 20),
-
             const Text(
               'Quantity',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 8),
-
             TextField(
               controller: quantityController,
               keyboardType: TextInputType.number,
@@ -173,19 +220,12 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 20),
-
             const Text(
               'Stored Date',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 8),
-
             InkWell(
               onTap: selectStoredDate,
               child: Container(
@@ -204,19 +244,12 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 20),
-
             const Text(
               'Use-by Date',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 8),
-
             InkWell(
               onTap: selectUseByDate,
               child: Container(
@@ -235,19 +268,12 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 20),
-
             const Text(
               'Location',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 8),
-
             DropdownButtonFormField<String>(
               value: selectedLocation,
               decoration: InputDecoration(
@@ -255,20 +281,12 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              items: const [
-                DropdownMenuItem(
-                  value: 'Refrigerator',
-                  child: Text('Refrigerator'),
-                ),
-                DropdownMenuItem(
-                  value: 'Freezer',
-                  child: Text('Freezer'),
-                ),
-                DropdownMenuItem(
-                  value: 'Other',
-                  child: Text('Other'),
-                ),
-              ],
+              items: locations
+                  .map((location) => DropdownMenuItem(
+                        value: location,
+                        child: Text(location),
+                      ))
+                  .toList(),
               onChanged: (value) {
                 if (value != null) {
                   setState(() {
@@ -277,24 +295,24 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                 }
               },
             ),
-
             const SizedBox(height: 30),
-
             SizedBox(
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text(
-                  'Save Changes',
-                  style: TextStyle(fontSize: 17),
+                onPressed: isSaving ? null : saveChanges,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
                 ),
+                child: isSaving
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'Save Changes',
+                        style: TextStyle(fontSize: 17),
+                      ),
               ),
             ),
-
-            const SizedBox(height: 20),
           ],
         ),
       ),

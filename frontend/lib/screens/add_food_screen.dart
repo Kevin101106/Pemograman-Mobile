@@ -1,5 +1,7 @@
 
 import 'package:flutter/material.dart';
+import '../food_store.dart';
+import '../models/food_item.dart';
 
 class AddFoodScreen extends StatefulWidget {
   const AddFoodScreen({super.key});
@@ -32,6 +34,9 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     if (pickedDate != null && mounted) {
       setState(() {
         storedDate = pickedDate;
+        if (useByDate.isBefore(storedDate)) {
+          useByDate = storedDate;
+        }
       });
     }
   }
@@ -40,7 +45,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     final pickedDate = await showDatePicker(
       context: context,
       initialDate: useByDate.isBefore(storedDate) ? storedDate : useByDate,
-      firstDate: DateTime(2020),
+      firstDate: storedDate,
       lastDate: DateTime(2100),
     );
 
@@ -61,7 +66,6 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     FocusScope.of(context).unfocus();
 
     if (isLoading) return;
-
     if (!_formKey.currentState!.validate()) return;
 
     if (useByDate.isBefore(storedDate)) {
@@ -78,23 +82,26 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
       isLoading = true;
     });
 
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 1));
 
     if (!mounted) return;
+
+    final food = FoodItem(
+      name: nameController.text.trim(),
+      category: selectedCategory,
+      quantity: int.parse(quantityController.text.trim()),
+      storedDate: storedDate,
+      useByDate: useByDate,
+      location: selectedLocation,
+    );
+
+    FoodStore.foods.add(food);
 
     setState(() {
       isLoading = false;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Failed to save food. Please try again later.',
-        ),
-        backgroundColor: Colors.red,
-        duration: Duration(seconds: 4),
-      ),
-    );
+    Navigator.pop(context, true);
   }
 
   @override
@@ -157,26 +164,11 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                   ),
                 ),
                 items: const [
-                  DropdownMenuItem(
-                    value: 'Vegetables',
-                    child: Text('Vegetables'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Meat',
-                    child: Text('Meat'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Fruit',
-                    child: Text('Fruit'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Dairy',
-                    child: Text('Dairy'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Other',
-                    child: Text('Other'),
-                  ),
+                  DropdownMenuItem(value: 'Vegetables', child: Text('Vegetables')),
+                  DropdownMenuItem(value: 'Meat', child: Text('Meat')),
+                  DropdownMenuItem(value: 'Fruit', child: Text('Fruit')),
+                  DropdownMenuItem(value: 'Dairy', child: Text('Dairy')),
+                  DropdownMenuItem(value: 'Other', child: Text('Other')),
                 ],
                 onChanged: (value) {
                   if (value != null) {
@@ -277,18 +269,9 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                   ),
                 ),
                 items: const [
-                  DropdownMenuItem(
-                    value: 'Refrigerator',
-                    child: Text('Refrigerator'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Freezer',
-                    child: Text('Freezer'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Other',
-                    child: Text('Other'),
-                  ),
+                  DropdownMenuItem(value: 'Refrigerator', child: Text('Refrigerator')),
+                  DropdownMenuItem(value: 'Freezer', child: Text('Freezer')),
+                  DropdownMenuItem(value: 'Other', child: Text('Other')),
                 ],
                 onChanged: (value) {
                   if (value != null) {
