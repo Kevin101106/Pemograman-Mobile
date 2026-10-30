@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../food_store.dart';
 import '../models/food_item.dart';
@@ -14,6 +13,28 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController searchController = TextEditingController();
+
+  String selectedCategory = 'All';
+  String selectedLocation = 'All';
+  bool sortAscending = true;
+
+  final List<String> categories = [
+    'All',
+    'Vegetables',
+    'Meat',
+    'Fruit',
+    'Dairy',
+    'Other',
+  ];
+
+  final List<String> locations = [
+    'All',
+    'Refrigerator',
+    'Freezer',
+    'Other',
+  ];
+
   String formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')} ${_monthName(date.month)} ${date.year}';
   }
@@ -99,9 +120,37 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  List<FoodItem> get filteredFoods {
+    final query = searchController.text.trim().toLowerCase();
+
+    final result = FoodStore.foods.where((food) {
+      final matchesName = food.name.toLowerCase().contains(query);
+      final matchesCategory =
+          selectedCategory == 'All' || food.category == selectedCategory;
+      final matchesLocation =
+          selectedLocation == 'All' || food.location == selectedLocation;
+
+      return matchesName && matchesCategory && matchesLocation;
+    }).toList();
+
+    result.sort((a, b) {
+      final comparison = a.useByDate.compareTo(b.useByDate);
+      return sortAscending ? comparison : -comparison;
+    });
+
+    return result;
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final foods = FoodStore.foods;
+    final visibleFoods = filteredFoods;
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -152,6 +201,130 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 12),
+            if (foods.isNotEmpty) ...[
+              TextField(
+                controller: searchController,
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  hintText: 'Search food name...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: searchController.text.isEmpty
+                      ? null
+                      : IconButton(
+                          onPressed: () {
+                            searchController.clear();
+                            setState(() {});
+                          },
+                          icon: const Icon(Icons.clear),
+                        ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: selectedCategory,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: 'Category',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                      ),
+                      items: categories.map((category) {
+                        return DropdownMenuItem(
+                          value: category,
+                          child: Text(category),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            selectedCategory = value;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: selectedLocation,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: 'Location',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                      ),
+                      items: locations.map((location) {
+                        return DropdownMenuItem(
+                          value: location,
+                          child: Text(location),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            selectedLocation = value;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${visibleFoods.length} food item(s)',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        sortAscending = !sortAscending;
+                      });
+                    },
+                    icon: Icon(
+                      sortAscending
+                          ? Icons.arrow_upward
+                          : Icons.arrow_downward,
+                    ),
+                    label: Text(
+                      sortAscending
+                          ? 'Earliest use-by'
+                          : 'Latest use-by',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+            ],
             if (foods.isEmpty)
               Container(
                 width: double.infinity,
@@ -214,8 +387,41 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               )
+            else if (visibleFoods.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: const Column(
+                  children: [
+                    Icon(
+                      Icons.search_off,
+                      size: 48,
+                      color: Colors.grey,
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      'No matching food found',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      'Try another search or change the filters.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              )
             else
-              ...foods.map(
+              ...visibleFoods.map(
                 (food) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: GestureDetector(
