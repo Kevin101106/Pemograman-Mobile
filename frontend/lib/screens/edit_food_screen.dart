@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
-import '../food_store.dart';
 import '../models/food_item.dart';
+import '../services/food_api_service.dart';
 
 class EditFoodScreen extends StatefulWidget {
   final FoodItem food;
@@ -20,6 +20,8 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
   late DateTime storedDate;
   late DateTime useByDate;
   bool isSaving = false;
+
+  final FoodApiService apiService = FoodApiService();
 
   final List<String> categories = [
     'Vegetables',
@@ -93,7 +95,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
-  void saveChanges() {
+  Future<void> saveChanges() async {
     final name = nameController.text.trim();
     final quantity = int.tryParse(quantityController.text.trim());
 
@@ -106,14 +108,18 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
 
     if (quantity == null || quantity <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Quantity must be a whole number greater than 0.')),
+        const SnackBar(
+          content: Text('Quantity must be a whole number greater than 0.'),
+        ),
       );
       return;
     }
 
     if (useByDate.isBefore(storedDate)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Use-by date cannot be before stored date.')),
+        const SnackBar(
+          content: Text('Use-by date cannot be before stored date.'),
+        ),
       );
       return;
     }
@@ -123,6 +129,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
     });
 
     final updatedFood = FoodItem(
+      id: widget.food.id,
       name: name,
       category: selectedCategory,
       quantity: quantity,
@@ -131,13 +138,33 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
       location: selectedLocation,
     );
 
-    final index = FoodStore.foods.indexOf(widget.food);
+    try {
+      final savedFood = await apiService.updateFood(updatedFood);
 
-    if (index != -1) {
-      FoodStore.foods[index] = updatedFood;
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Food updated successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pop(context, savedFood);
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        isSaving = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to update food: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
-
-    Navigator.pop(context, updatedFood);
   }
 
   @override
@@ -184,7 +211,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: selectedCategory,
+              initialValue: selectedCategory,
               decoration: InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -275,7 +302,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: selectedLocation,
+              initialValue: selectedLocation,
               decoration: InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),

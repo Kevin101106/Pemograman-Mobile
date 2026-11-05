@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
-import '../food_store.dart';
 import '../models/food_item.dart';
+import '../services/food_api_service.dart';
 
 class AddFoodScreen extends StatefulWidget {
   const AddFoodScreen({super.key});
@@ -14,6 +14,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
+  final FoodApiService apiService = FoodApiService();
 
   String selectedCategory = 'Vegetables';
   String selectedLocation = 'Refrigerator';
@@ -82,26 +83,44 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
       isLoading = true;
     });
 
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final food = FoodItem(
+        name: nameController.text.trim(),
+        category: selectedCategory,
+        quantity: int.parse(quantityController.text.trim()),
+        storedDate: storedDate,
+        useByDate: useByDate,
+        location: selectedLocation,
+      );
 
-    if (!mounted) return;
+      await apiService.addFood(food);
 
-    final food = FoodItem(
-      name: nameController.text.trim(),
-      category: selectedCategory,
-      quantity: int.parse(quantityController.text.trim()),
-      storedDate: storedDate,
-      useByDate: useByDate,
-      location: selectedLocation,
-    );
+      if (!mounted) return;
 
-    FoodStore.foods.add(food);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Food added successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
 
-    setState(() {
-      isLoading = false;
-    });
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
 
-    Navigator.pop(context, true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save food: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -157,7 +176,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: selectedCategory,
+                initialValue: selectedCategory,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -262,7 +281,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: selectedLocation,
+                initialValue: selectedLocation,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),

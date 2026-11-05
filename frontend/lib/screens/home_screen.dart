@@ -1,6 +1,7 @@
+
 import 'package:flutter/material.dart';
-import '../food_store.dart';
 import '../models/food_item.dart';
+import '../services/food_api_service.dart';
 import 'add_food_screen.dart';
 import 'food_detail_screen.dart';
 import 'profile_screen.dart';
@@ -14,6 +15,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController searchController = TextEditingController();
+  final FoodApiService apiService = FoodApiService();
+
+  List<FoodItem> foods = [];
+  bool isLoading = true;
+  String? errorMessage;
 
   String selectedCategory = 'All';
   String selectedLocation = 'All';
@@ -35,14 +41,59 @@ class _HomeScreenState extends State<HomeScreen> {
     'Other',
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    refreshFoods();
+  }
+
+  Future<void> refreshFoods() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final result = await apiService.getFoods();
+
+      if (!mounted) return;
+
+      setState(() {
+        foods = result;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        errorMessage = 'Unable to load food data. Please try again.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
   String formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')} ${_monthName(date.month)} ${date.year}';
   }
 
   String _monthName(int month) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
 
     return months[month - 1];
@@ -51,6 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String foodStatus(FoodItem food) {
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
+
     final expiryDate = DateTime(
       food.useByDate.year,
       food.useByDate.month,
@@ -58,21 +110,21 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (expiryDate.isBefore(todayDate)) {
-      return 'Melewati Batas';
+      return 'Past Due';
     }
 
     if (expiryDate.difference(todayDate).inDays <= 2) {
-      return 'Segera Digunakan';
+      return 'Use Soon';
     }
 
-    return 'Masih Segar';
+    return 'Fresh';
   }
 
   Color statusColor(FoodItem food) {
     switch (foodStatus(food)) {
-      case 'Melewati Batas':
+      case 'Past Due':
         return Colors.red;
-      case 'Segera Digunakan':
+      case 'Use Soon':
         return Colors.orange;
       default:
         return Colors.green;
@@ -103,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (mounted) {
-      setState(() {});
+      await refreshFoods();
     }
   }
 
@@ -116,14 +168,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (mounted) {
-      setState(() {});
+      await refreshFoods();
     }
   }
 
   List<FoodItem> get filteredFoods {
     final query = searchController.text.trim().toLowerCase();
 
-    final result = FoodStore.foods.where((food) {
+    final result = foods.where((food) {
       final matchesName = food.name.toLowerCase().contains(query);
       final matchesCategory =
           selectedCategory == 'All' || food.category == selectedCategory;
@@ -149,7 +201,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final foods = FoodStore.foods;
     final visibleFoods = filteredFoods;
 
     return Scaffold(
@@ -201,7 +252,57 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            if (foods.isNotEmpty) ...[
+            if (isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(40),
+                  child: CircularProgressIndicator(color: Colors.green),
+                ),
+              )
+            else if (errorMessage != null)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.cloud_off,
+                      size: 48,
+                      color: Colors.red,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Unable to Load Food',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: refreshFoods,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Try Again'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (foods.isNotEmpty) ...[
               TextField(
                 controller: searchController,
                 onChanged: (_) => setState(() {}),
@@ -229,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: selectedCategory,
+                      initialValue: selectedCategory,
                       isExpanded: true,
                       decoration: InputDecoration(
                         labelText: 'Category',
@@ -261,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: selectedLocation,
+                      initialValue: selectedLocation,
                       isExpanded: true,
                       decoration: InputDecoration(
                         labelText: 'Location',
@@ -325,7 +426,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 4),
             ],
-            if (foods.isEmpty)
+            if (!isLoading && errorMessage == null && foods.isEmpty)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -387,7 +488,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               )
-            else if (visibleFoods.isEmpty)
+            else if (!isLoading &&
+                errorMessage == null &&
+                visibleFoods.isEmpty)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(28),
@@ -420,7 +523,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               )
-            else
+            else if (!isLoading && errorMessage == null)
               ...visibleFoods.map(
                 (food) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),

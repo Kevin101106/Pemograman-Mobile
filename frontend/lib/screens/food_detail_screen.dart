@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
-import '../food_store.dart';
 import '../models/food_item.dart';
+import '../services/food_api_service.dart';
 import 'edit_food_screen.dart';
 
 class FoodDetailScreen extends StatefulWidget {
@@ -15,6 +15,8 @@ class FoodDetailScreen extends StatefulWidget {
 
 class _FoodDetailScreenState extends State<FoodDetailScreen> {
   late FoodItem? currentFood;
+  final FoodApiService apiService = FoodApiService();
+  bool isDeleting = false;
 
   @override
   void initState() {
@@ -41,14 +43,14 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
     );
     final difference = expiryDate.difference(todayDate).inDays;
 
-    if (difference < 0) return 'Melewati Batas';
-    if (difference <= 2) return 'Segera Digunakan';
-    return 'Masih Segar';
+    if (difference < 0) return 'Past Due';
+    if (difference <= 2) return 'Use Soon';
+    return 'Fresh';
   }
 
   Color getStatusColor(String status) {
-    if (status == 'Melewati Batas') return Colors.red;
-    if (status == 'Segera Digunakan') return Colors.orange;
+    if (status == 'Past Due') return Colors.red;
+    if (status == 'Use Soon') return Colors.orange;
     return Colors.green;
   }
 
@@ -72,13 +74,13 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
 
   Future<void> deleteFood() async {
     final food = currentFood;
-    if (food == null) return;
+    if (food == null || food.id == null || isDeleting) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Food'),
-        content: Text('Hapus ${food.name} dari daftar makanan?'),
+        content: Text('Are you sure you want to delete ${food.name}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -95,9 +97,38 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
       ),
     );
 
-    if (confirmed == true && mounted) {
-      FoodStore.foods.remove(food);
-      Navigator.pop(context);
+    if (confirmed != true || !mounted) return;
+
+    setState(() {
+      isDeleting = true;
+    });
+
+    try {
+      await apiService.deleteFood(food.id!);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Food deleted successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pop(context, true);
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        isDeleting = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete food: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -189,7 +220,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                     width: double.infinity,
                     height: 52,
                     child: ElevatedButton.icon(
-                      onPressed: editFood,
+                      onPressed: isDeleting ? null : editFood,
                       icon: const Icon(Icons.edit),
                       label: const Text(
                         'Edit Food',
@@ -202,11 +233,19 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                     width: double.infinity,
                     height: 52,
                     child: OutlinedButton.icon(
-                      onPressed: deleteFood,
-                      icon: const Icon(Icons.delete),
-                      label: const Text(
-                        'Delete Food',
-                        style: TextStyle(fontSize: 17),
+                      onPressed: isDeleting ? null : deleteFood,
+                      icon: isDeleting
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Icon(Icons.delete),
+                      label: Text(
+                        isDeleting ? 'Deleting...' : 'Delete Food',
+                        style: const TextStyle(fontSize: 17),
                       ),
                     ),
                   ),
