@@ -1,5 +1,8 @@
+
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
+import 'home_screen.dart';
 import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -13,17 +16,23 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    checkLogin();
+  }
 
-    Timer(const Duration(seconds: 2), () {
-      if (!mounted) return;
+  Future<void> checkLogin() async {
+    await Future.delayed(const Duration(seconds: 2));
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
-        ),
-      );
-    });
+    final isLoggedIn = await AuthService().checkSession();
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            isLoggedIn ? const HomeScreen() : const LoginScreen(),
+      ),
+    );
   }
 
   @override
@@ -34,11 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.eco,
-              size: 80,
-              color: Colors.white,
-            ),
+            const Icon(Icons.eco, size: 80, color: Colors.white),
             const SizedBox(height: 20),
             const Text(
               'FreshTrack',
@@ -51,11 +56,10 @@ class _SplashScreenState extends State<SplashScreen> {
             const SizedBox(height: 8),
             const Text(
               'Keep your food fresh',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.white),
             ),
+            const SizedBox(height: 30),
+            const CircularProgressIndicator(color: Colors.white),
           ],
         ),
       ),
