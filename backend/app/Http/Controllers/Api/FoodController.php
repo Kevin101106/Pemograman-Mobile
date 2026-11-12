@@ -8,9 +8,11 @@ use Illuminate\Http\Request;
 
 class FoodController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Food::latest()->get());
+        return response()->json(
+            $request->user()->foods()->latest()->get()
+        );
     }
 
     public function store(Request $request)
@@ -24,7 +26,7 @@ class FoodController extends Controller
             'location' => 'required|string|max:255',
         ]);
 
-        $food = Food::create($validated);
+        $food = $request->user()->foods()->create($validated);
 
         return response()->json([
             'message' => 'Makanan berhasil ditambahkan',
@@ -32,13 +34,17 @@ class FoodController extends Controller
         ], 201);
     }
 
-    public function show(Food $food)
+    public function show(Request $request, Food $food)
     {
+        $food = $request->user()->foods()->findOrFail($food->id);
+
         return response()->json($food);
     }
 
     public function update(Request $request, Food $food)
     {
+        $food = $request->user()->foods()->findOrFail($food->id);
+
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'category' => 'sometimes|required|string|max:255',
@@ -56,8 +62,10 @@ class FoodController extends Controller
         ]);
     }
 
-    public function destroy(Food $food)
+    public function destroy(Request $request, Food $food)
     {
+        $food = $request->user()->foods()->findOrFail($food->id);
+
         $food->delete();
 
         return response()->json([

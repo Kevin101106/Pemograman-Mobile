@@ -1,10 +1,14 @@
-
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   static const String baseUrl = 'http://10.0.2.2:8000/api';
+
+  static const FlutterSecureStorage _secureStorage =
+      FlutterSecureStorage();
 
   Future<Map<String, dynamic>> login({
     required String email,
@@ -70,14 +74,18 @@ class AuthService {
   Future<void> _saveSession(Map<String, dynamic> data) async {
     final preferences = await SharedPreferences.getInstance();
 
-    await preferences.setString('auth_token', data['token']);
+    await _secureStorage.write(
+      key: 'auth_token',
+      value: data['token'],
+    );
+
     await preferences.setString('user_name', data['user']['name']);
     await preferences.setString('user_email', data['user']['email']);
   }
 
   Future<bool> checkSession() async {
     final preferences = await SharedPreferences.getInstance();
-    final token = preferences.getString('auth_token');
+    final token = await _secureStorage.read(key: 'auth_token');
 
     if (token == null || token.isEmpty) {
       return false;
@@ -100,7 +108,9 @@ class AuthService {
 
         return true;
       }
-    } catch (_) {}
+    } catch (_) {
+      debugPrint('Session validation failed.');
+    }
 
     await clearSession();
     return false;
@@ -117,8 +127,7 @@ class AuthService {
   }
 
   Future<String?> getToken() async {
-    final preferences = await SharedPreferences.getInstance();
-    return preferences.getString('auth_token');
+    return await _secureStorage.read(key: 'auth_token');
   }
 
   Future<void> logout() async {
@@ -141,7 +150,8 @@ class AuthService {
 
   Future<void> clearSession() async {
     final preferences = await SharedPreferences.getInstance();
-    await preferences.remove('auth_token');
+
+    await _secureStorage.delete(key: 'auth_token');
     await preferences.remove('user_name');
     await preferences.remove('user_email');
   }
