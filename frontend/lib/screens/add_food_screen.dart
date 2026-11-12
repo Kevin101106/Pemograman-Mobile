@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../models/food_item.dart';
 import '../services/food_api_service.dart';
+import '../utils/food_rules.dart';
 
 class AddFoodScreen extends StatefulWidget {
   const AddFoodScreen({super.key});
@@ -69,10 +70,12 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     if (isLoading) return;
     if (!_formKey.currentState!.validate()) return;
 
-    if (useByDate.isBefore(storedDate)) {
+    final dateError = FoodRules.validateDates(storedDate, useByDate);
+
+    if (dateError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Use-by Date cannot be before Stored Date.'),
+        SnackBar(
+          content: Text(dateError),
           backgroundColor: Colors.red,
         ),
       );
@@ -162,12 +165,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Food name is required.';
-                  }
-                  return null;
-                },
+                validator: FoodRules.validateName,
               ),
               const SizedBox(height: 20),
               const Text(
@@ -212,19 +210,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Quantity is required.';
-                  }
-
-                  final quantity = int.tryParse(value.trim());
-
-                  if (quantity == null || quantity <= 0) {
-                    return 'Enter a whole number greater than 0.';
-                  }
-
-                  return null;
-                },
+                validator: FoodRules.validateQuantity,
               ),
               const SizedBox(height: 20),
               const Text(

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../models/food_item.dart';
 import '../services/food_api_service.dart';
+import '../utils/food_rules.dart';
 import 'add_food_screen.dart';
 import 'food_detail_screen.dart';
 import 'profile_screen.dart';
@@ -100,24 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String foodStatus(FoodItem food) {
-    final today = DateTime.now();
-    final todayDate = DateTime(today.year, today.month, today.day);
-
-    final expiryDate = DateTime(
-      food.useByDate.year,
-      food.useByDate.month,
-      food.useByDate.day,
-    );
-
-    if (expiryDate.isBefore(todayDate)) {
-      return 'Past Due';
-    }
-
-    if (expiryDate.difference(todayDate).inDays <= 2) {
-      return 'Use Soon';
-    }
-
-    return 'Fresh';
+    return FoodRules.getStatus(food.useByDate);
   }
 
   Color statusColor(FoodItem food) {
@@ -173,24 +157,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<FoodItem> get filteredFoods {
-    final query = searchController.text.trim().toLowerCase();
+    final filtered = FoodRules.filterFoods(
+      foods: foods,
+      query: searchController.text,
+      category: selectedCategory,
+      location: selectedLocation,
+    );
 
-    final result = foods.where((food) {
-      final matchesName = food.name.toLowerCase().contains(query);
-      final matchesCategory =
-          selectedCategory == 'All' || food.category == selectedCategory;
-      final matchesLocation =
-          selectedLocation == 'All' || food.location == selectedLocation;
-
-      return matchesName && matchesCategory && matchesLocation;
-    }).toList();
-
-    result.sort((a, b) {
-      final comparison = a.useByDate.compareTo(b.useByDate);
-      return sortAscending ? comparison : -comparison;
-    });
-
-    return result;
+    return FoodRules.sortFoods(
+      filtered,
+      ascending: sortAscending,
+    );
   }
 
   @override

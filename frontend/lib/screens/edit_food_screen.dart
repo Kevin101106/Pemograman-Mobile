@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../models/food_item.dart';
 import '../services/food_api_service.dart';
+import '../utils/food_rules.dart';
 
 class EditFoodScreen extends StatefulWidget {
   final FoodItem food;
@@ -66,7 +67,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
       lastDate: DateTime(2100),
     );
 
-    if (pickedDate != null) {
+    if (pickedDate != null && mounted) {
       setState(() {
         storedDate = pickedDate;
         if (useByDate.isBefore(storedDate)) {
@@ -84,7 +85,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
       lastDate: DateTime(2100),
     );
 
-    if (pickedDate != null) {
+    if (pickedDate != null && mounted) {
       setState(() {
         useByDate = pickedDate;
       });
@@ -96,33 +97,32 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
   }
 
   Future<void> saveChanges() async {
-    final name = nameController.text.trim();
-    final quantity = int.tryParse(quantityController.text.trim());
+    final nameError = FoodRules.validateName(nameController.text);
+    final quantityError = FoodRules.validateQuantity(quantityController.text);
+    final dateError = FoodRules.validateDates(storedDate, useByDate);
 
-    if (name.isEmpty) {
+    if (nameError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Food name is required.')),
+        SnackBar(content: Text(nameError)),
       );
       return;
     }
 
-    if (quantity == null || quantity <= 0) {
+    if (quantityError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Quantity must be a whole number greater than 0.'),
-        ),
+        SnackBar(content: Text(quantityError)),
       );
       return;
     }
 
-    if (useByDate.isBefore(storedDate)) {
+    if (dateError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Use-by date cannot be before stored date.'),
-        ),
+        SnackBar(content: Text(dateError)),
       );
       return;
     }
+
+    if (isSaving) return;
 
     setState(() {
       isSaving = true;
@@ -130,9 +130,9 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
 
     final updatedFood = FoodItem(
       id: widget.food.id,
-      name: name,
+      name: nameController.text.trim(),
       category: selectedCategory,
-      quantity: quantity,
+      quantity: int.parse(quantityController.text.trim()),
       storedDate: storedDate,
       useByDate: useByDate,
       location: selectedLocation,
@@ -154,16 +154,18 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
     } catch (error) {
       if (!mounted) return;
 
-      setState(() {
-        isSaving = false;
-      });
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to update food: $error'),
           backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isSaving = false;
+        });
+      }
     }
   }
 
