@@ -1,91 +1,220 @@
 # FreshTrack 🥬
 
-## 1. Deskripsi Masalah
+## 1. Deskripsi Aplikasi
 
-Makanan yang disimpan di kulkas sering terlupakan karena pengguna tidak selalu mengingat kapan makanan tersebut disimpan atau kapan sebaiknya digunakan. Hal ini dapat menyebabkan makanan melewati batas penggunaan dan akhirnya terbuang.
+FreshTrack adalah aplikasi mobile untuk membantu pengguna mencatat dan memantau makanan yang disimpan di kulkas. Aplikasi ini membantu pengguna mengetahui tanggal penyimpanan dan batas penggunaan makanan agar makanan tidak mudah terlupakan.
 
-FreshTrack membantu pengguna mencatat dan memantau makanan yang disimpan di kulkas, termasuk nama makanan, kategori, jumlah, tanggal disimpan, dan batas penggunaan. Sistem kemudian memberikan status dan menentukan makanan yang perlu digunakan terlebih dahulu.
+Target pengguna FreshTrack adalah mahasiswa atau anak kos, pengguna meal prep, dan rumah tangga.
 
-## 2. Profil Target Pengguna
+## 2. Fitur Aplikasi
 
-Pengguna aplikasi ini adalah individu yang menyimpan makanan di kulkas, dengan target utama:
+- **Register dan Login:** Pengguna dapat membuat akun dan masuk ke aplikasi.
+- **Tambah Makanan:** Menambahkan nama, kategori, jumlah, tanggal penyimpanan, tanggal batas penggunaan, dan lokasi makanan.
+- **Daftar Makanan:** Melihat seluruh makanan yang telah ditambahkan.
+- **Edit dan Hapus:** Mengubah atau menghapus data makanan.
+- **Status Makanan:** Menampilkan status Fresh, Use Soon, dan Past Due.
+- **Pencarian dan Filter:** Mencari makanan berdasarkan nama, kategori, dan lokasi.
+- **Pengurutan:** Mengurutkan makanan berdasarkan tanggal batas penggunaan.
+- **Profil:** Melihat informasi akun pengguna.
 
-* **Mahasiswa / Anak Kos** — Mengatur makanan yang disimpan dan menghindari makanan terlupakan.
-* **Meal Prep User** — Memantau makanan yang telah disiapkan.
-* **Pengguna Rumah Tangga** — Mengelola stok makanan di kulkas.
+Status makanan ditentukan berdasarkan tanggal yang dimasukkan pengguna dan bukan merupakan penilaian keamanan makanan.
 
-## 3. Manfaat Aplikasi
+## 3. Teknologi yang Digunakan
 
-* **Mengurangi Food Waste** — Membantu pengguna menggunakan makanan sebelum melewati batas penggunaan.
-* **Pengelolaan Stok** — Menyediakan daftar makanan yang tersimpan dalam satu tempat.
-* **Sistem Prioritas** — Menentukan makanan yang perlu digunakan terlebih dahulu.
-* **Pemantauan Makanan** — Memberikan status berdasarkan tanggal penggunaan.
+| Bagian | Teknologi |
+|---|---|
+| Frontend | Flutter dan Dart |
+| Backend | Laravel 12 dan PHP |
+| Database | MySQL |
+| Autentikasi | Laravel Sanctum |
+| Penyimpanan token | Flutter Secure Storage |
+| Komunikasi | REST API |
 
-## 4. Daftar Fitur Inti
+## 4. Persiapan Instalasi
 
-### 4.1 Sistem Autentikasi
+Pastikan perangkat sudah memiliki:
 
-Pengguna dapat melakukan **Register** dan **Login** untuk mengakses aplikasi.
+- Git
+- PHP 8.2 atau lebih baru
+- Composer
+- MySQL atau XAMPP
+- Flutter SDK
+- Android Studio dan Android Emulator
 
-### 4.2 Manajemen Makanan (CRUD)
+## 5. Cara Clone Repository
 
-Pengguna dapat menambahkan, melihat, mengubah, dan menghapus data makanan.
+Buka terminal dan jalankan:
 
-### 4.3 Sistem Status Makanan
+```bash
+git clone https://github.com/Kevin101106/Pemograman-Mobile.git
+cd Pemograman-Mobile
+```
 
-Sistem menentukan status makanan berdasarkan tanggal penggunaan:
+## 6. Instalasi Backend
 
-* 🟢 **Masih Segar**
-* 🟡 **Segera Digunakan**
-* 🔴 **Melewati Batas**
+Masuk ke folder backend:
 
-> Status hanya berdasarkan tanggal yang dimasukkan pengguna dan bukan merupakan penilaian keamanan makanan.
+```bash
+cd backend
+```
 
-### 4.4 Sistem Prioritas
+Pasang dependency Laravel:
 
-Makanan diurutkan berdasarkan batas penggunaan, sehingga makanan dengan tanggal penggunaan paling dekat menjadi prioritas.
+```bash
+composer install
+```
 
-### 4.5 Detail Makanan
+Buat file konfigurasi lokal:
 
-Pengguna dapat melihat informasi lengkap makanan seperti:
+```bash
+copy .env.example .env
+```
 
-* Nama makanan
-* Kategori
-* Jumlah
-* Tanggal disimpan
-* Batas penggunaan
-* Lokasi penyimpanan
+Buka file `.env`, kemudian sesuaikan konfigurasi database:
 
-## 5. Fitur yang Tidak Dikerjakan
+```env
+APP_NAME=FreshTrack
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost
 
-Berikut fitur yang berada di luar cakupan pengembangan:
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=freshtrack_db
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-* **AI & Kamera** — Tidak menentukan kondisi atau keamanan makanan menggunakan AI atau kamera.
-* **IoT** — Tidak menggunakan sensor suhu atau perangkat pintar.
-* **Marketplace & Pembayaran** — Tidak menyediakan jual-beli atau transaksi makanan.
-* **GPS & Chat** — Tidak menyediakan pelacakan lokasi atau komunikasi antar pengguna.
+Buat database bernama `freshtrack_db` melalui phpMyAdmin atau MySQL.
 
-## 6. Kriteria Aplikasi Dinyatakan Berhasil
+Buat application key:
 
-Aplikasi dinyatakan berhasil apabila:
+```bash
+php artisan key:generate
+```
 
-* **Autentikasi Berhasil** — Pengguna dapat melakukan Register/Login dan mengakses data miliknya.
-* **CRUD Berjalan** — Pengguna dapat mengelola data makanan.
-* **Status Berjalan** — Sistem memberikan status berdasarkan tanggal penggunaan.
-* **Prioritas Berjalan** — Makanan dengan batas penggunaan terdekat menjadi prioritas.
-* **Database Berjalan** — Data pengguna dan makanan tersimpan dengan benar.
+Jalankan migration:
 
-## 7. Teknologi Pengembangan
+```bash
+php artisan migrate
+```
 
-### Backend
+Jalankan backend:
 
-* **Laravel (PHP)** — Menangani API, autentikasi, CRUD, dan logika aplikasi.
-* **MySQL** — Menyimpan data pengguna dan data makanan.
+```bash
+php artisan serve --host=0.0.0.0 --port=8000
+```
 
-### Frontend
+Backend akan berjalan pada port 8000.
 
-* **Flutter (Dart)** — Digunakan untuk membangun aplikasi mobile FreshTrack untuk iOS.
+## 7. Instalasi Frontend
 
-### Communication
+Buka terminal baru, kemudian masuk ke folder frontend:
 
-* **REST API** — Menghubungkan aplikasi Flutter dengan backend Laravel.
+```bash
+cd frontend
+```
+
+Pasang dependency Flutter:
+
+```bash
+flutter pub get
+```
+
+Untuk menjalankan aplikasi menggunakan Android Emulator, pastikan emulator sudah aktif.
+
+Alamat API untuk Android Emulator adalah:
+
+```text
+http://10.0.2.2:8000/api
+```
+
+Alamat tersebut digunakan untuk menghubungkan emulator dengan backend yang berjalan di komputer yang sama.
+
+Jalankan aplikasi:
+
+```bash
+flutter run
+```
+
+## 8. Menjalankan Pengujian
+
+Pengujian backend:
+
+```bash
+cd backend
+php artisan test
+```
+
+Pemeriksaan dependency backend:
+
+```bash
+composer audit
+```
+
+Pengujian frontend:
+
+```bash
+cd frontend
+flutter analyze
+flutter test
+```
+
+## 9. Build Aplikasi Android
+
+Pastikan backend sudah berjalan dan konfigurasi alamat API sesuai dengan lingkungan pengujian.
+
+Masuk ke folder frontend:
+
+```bash
+cd frontend
+```
+
+Jalankan perintah build:
+
+```bash
+flutter build apk --release
+```
+
+File APK akan tersedia di:
+
+```text
+build/app/outputs/flutter-apk/app-release.apk
+```
+
+Untuk memasang APK melalui perangkat yang terhubung dengan ADB:
+
+```bash
+adb install -r build/app/outputs/flutter-apk/app-release.apk
+```
+
+**Catatan:** Konfigurasi API saat ini masih menggunakan alamat khusus Android Emulator untuk pengembangan lokal. Agar APK dapat digunakan di luar lingkungan tersebut, alamat API harus diarahkan ke server yang dapat diakses perangkat dan menggunakan HTTPS.
+
+## 10. Konfigurasi untuk Deployment
+
+Sebelum aplikasi dipublikasikan, backend perlu menggunakan server yang dapat diakses melalui internet.
+
+Konfigurasi produksi Laravel harus menggunakan:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+```
+
+Selain itu, alamat API frontend harus diarahkan ke alamat server produksi dengan HTTPS. Konfigurasi database dan kredensial server juga harus disesuaikan dengan lingkungan produksi.
+
+Deployment publik belum termasuk dalam konfigurasi pengembangan lokal yang dijelaskan di atas.
+
+## 11. Dokumentasi Tambahan
+
+Dokumentasi proyek tersedia pada file berikut:
+
+- [HowToRun.md](HowToRun.md) — Panduan menjalankan aplikasi.
+- [checklist_mvp.md](checklist_mvp.md) — Checklist penyelesaian MVP.
+- [SECURITY_TEST.md](SECURITY_TEST.md) — Hasil pengujian keamanan.
+- [demo.mp4](demo.mp4) — Video demonstrasi aplikasi.
+
+## 12. Batasan Aplikasi
+
+FreshTrack berfokus pada pencatatan dan pemantauan makanan. Aplikasi ini belum menyediakan fitur AI, kamera pendeteksi kondisi makanan, sensor IoT, marketplace, pembayaran, GPS, maupun chat antar pengguna.
