@@ -1,11 +1,16 @@
-
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/food_item.dart';
 import 'auth_service.dart';
 
 class FoodApiService {
-  static const String baseUrl = 'http://10.0.2.2:8000/api/foods';
+  static String get baseUrl {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:8000/api/foods';
+    }
+    return 'http://127.0.0.1:8000/api/foods';
+  }
 
   final AuthService authService = AuthService();
 
