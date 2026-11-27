@@ -1,0 +1,64 @@
+name: FreshTrack CI
+
+on:
+  push:
+    branches:
+      - v1.0_dev
+  pull_request:
+    branches:
+      - v1.0_dev
+
+jobs:
+  backend-tests:
+    name: Laravel Backend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Prepare environment
+        working-directory: backend
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run Laravel tests
+        working-directory: backend
+        run: php artisan test
+
+  frontend-tests:
+    name: Flutter Frontend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install Flutter dependencies
+        working-directory: frontend
+        run: flutter pub get
+
+      - name: Analyze Flutter code
+        working-directory: frontend
+        run: flutter analyze
+
+      - name: Run Flutter tests
+        working-directory: frontend
+        run: flutter test
