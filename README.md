@@ -214,7 +214,3 @@ Dokumentasi proyek tersedia pada file berikut:
 - [checklist_mvp.md](checklist_mvp.md) — Checklist penyelesaian MVP.
 - [SECURITY_TEST.md](SECURITY_TEST.md) — Hasil pengujian keamanan.
 - [demo.mp4](demo.mp4) — Video demonstrasi aplikasi.
-
-## 12. Batasan Aplikasi
-
-FreshTrack berfokus pada pencatatan dan pemantauan makanan. Aplikasi ini belum menyediakan fitur AI, kamera pendeteksi kondisi makanan, sensor IoT, marketplace, pembayaran, GPS, maupun chat antar pengguna.
